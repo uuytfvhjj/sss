@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>H₂O₂ 3D Viewer</title>
+  <script src="https://cdn.jsdelivr.net/npm/ngl@2.0.0/dist/ngl.min.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #viewport { width: 100vw; height: 100vh; }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: Arial;
+    }
+  </style>
+</head>
+<body>
+  <div id="viewport"></div>
+  <div id="controls">
+    <button onclick="rotateC2()">执行 C₂ 旋转 (180°)</button>
+  </div>
+
+  <script>
+    // 初始化 NGL Stage
+    const stage = new NGL.Stage("viewport");
+
+    // 加载 H₂O₂ 结构（使用 PubChem 的 SDF 链接）
+    stage.loadFile("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/784/SDF?record_type=3d").then(function (component) {
+      // 添加球棍模型
+      component.addRepresentation("ball+stick", {
+        aspectRatio: 1.5,
+        radiusScale: 0.2
+      });
+
+      // 自动居中
+      stage.autoView();
+
+      // 保存组件引用，供后续旋转使用
+      window.h2o2Component = component;
+    });
+
+    // C₂ 旋转函数（绕 Z 轴 180° 示例）
+    function rotateC2() {
+      if (!window.h2o2Component) return alert("结构未加载完成！");
+
+      // 获取当前旋转矩阵
+      const m = window.h2o2Component.matrix.clone();
+
+      // 构造绕 Z 轴旋转 180° 的矩阵（π 弧度）
+      const angle = Math.PI;
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+
+      // 旋转矩阵（绕 Z 轴）
+      const rotZ = new NGL.Matrix4().set(
+        cos, -sin, 0, 0,
+        sin,  cos, 0, 0,
+        0,    0,   1, 0,
+        0,    0,   0, 1
+      );
+
+      // 应用旋转
+      m.multiply(rotZ);
+      window.h2o2Component.setMatrix(m);
+    }
+  </script>
+</body>
+</html>
