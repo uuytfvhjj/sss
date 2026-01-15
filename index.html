@@ -1,39 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
-  <meta charset="utf-8">
-  <title>H₂O₂ C₂ Rotation</title>
+  <meta charset="UTF-8" />
+  <title>H₂O₂ C₂ 旋转演示</title>
+  <!-- 引入 NGL Viewer -->
   <script src="https://cdn.jsdelivr.net/npm/ngl@2.0.0/dist/ngl.min.js"></script>
   <style>
     body { margin: 0; overflow: hidden; }
     #viewport { width: 100vw; height: 100vh; }
-    #btn { position: absolute; top: 20px; left: 20px; padding: 10px; }
+    #controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: Arial;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
+  <!-- 3D 渲染容器 -->
   <div id="viewport"></div>
-  <button id="btn" onclick="rotateC2()">C₂ 旋转</button>
+  <!-- 控制按钮 -->
+  <div id="controls">
+    <button onclick="rotateC2()">执行 C₂ 旋转 (180°)</button>
+  </div>
 
   <script>
-    // 初始化 3D 视图
+    // 初始化 NGL Stage
     const stage = new NGL.Stage("viewport");
 
-    // 👇 这一行就是加载你下载的 h2o2.sdf 文件 👇
-    stage.loadFile("h2o2.sdf").then(function (component) {
-      component.addRepresentation("ball+stick");
-      stage.autoView();
-      window.mol = component; // 保存引用，供旋转使用
-    }).catch(function (e) {
-      alert("加载失败！请用 Live Server 或 GitHub Pages 打开，不能直接双击 HTML。");
-      console.error(e);
-    });
+    // 加载 GitHub 上的 h2o2.sdf 文件
+    const sdfUrl = "https://uuytfvhjj.github.io/sss/h2o2.sdf";
 
+    stage.loadFile(sdfUrl)
+      .then(function (component) {
+        // 添加球棍模型
+        component.addRepresentation("ball+stick", {
+          radiusScale: 0.2,
+          aspectRatio: 1.5
+        });
+        // 自动调整视角
+        stage.autoView();
+        // 保存引用，供旋转使用
+        window.mol = component;
+        console.log("✅ H₂O₂ 分子加载成功！");
+      })
+      .catch(function (error) {
+        console.error("❌ 加载失败:", error);
+        alert("分子加载失败！请检查 h2o2.sdf 是否存在。");
+      });
+
+    // C₂ 旋转函数（绕 Z 轴 180°）
     function rotateC2() {
-      if (!window.mol) return;
+      if (!window.mol) {
+        alert("分子未加载完成！");
+        return;
+      }
       const m = window.mol.matrix.clone();
-      // 绕 Z 轴旋转 180°
-      m.multiply(new NGL.Matrix4().set(-1,0,0,0, 0,-1,0,0, 0,0,1,0, 0,0,0,1));
+      // 构造 180° 绕 Z 轴的旋转矩阵
+      const rot180 = new NGL.Matrix4().set(
+        -1,  0, 0, 0,
+         0, -1, 0, 0,
+         0,  0, 1, 0,
+         0,  0, 0, 1
+      );
+      m.multiply(rot180);
       window.mol.setMatrix(m);
+      console.log("🔄 执行 C₂ 对称操作");
     }
   </script>
 </body>
